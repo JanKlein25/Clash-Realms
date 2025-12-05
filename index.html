@@ -1,350 +1,1209 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mein Browser RPG</title>
+    <title>Browser RPG</title>
     <style>
-        /* --- CSS STYLING --- */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #2c3e50;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+        :root {
+            --bg-color: #2c241b;
+            --panel-bg: #4a3b2a;
+            --text-color: #f4e4bc;
+            --accent-color: #e6c17a;
+            --danger-color: #c0392b;
+            --success-color: #27ae60;
+            --rare-color: #3498db;
+            --epic-color: #9b59b6;
+            --legendary-color: #f1c40f;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        .game-container {
-            width: 800px;
-            height: 600px;
-            background-color: #f4e4bc; /* Pergament-Farbe */
-            border: 5px solid #8b4513;
-            border-radius: 10px;
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            overflow: hidden;
         }
 
-        /* Header mit Ressourcen */
-        .header {
-            background-color: #8b4513;
-            color: #fff;
-            padding: 10px;
-            display: flex;
-            justify-content: space-around;
-            font-weight: bold;
+        /* Utility */
+        .hidden {
+            display: none !important;
         }
 
-        /* Navigation */
-        .nav {
-            background-color: #a0522d;
-            display: flex;
-        }
-
-        .nav button {
-            flex: 1;
-            padding: 15px;
-            background: none;
-            border: none;
+        .btn {
+            background: linear-gradient(to bottom, #8e44ad, #6c3483);
+            border: 2px solid #3e2723;
             color: white;
-            font-size: 18px;
+            padding: 8px 16px;
             cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .nav button:hover {
-            background-color: #cd853f;
-        }
-
-        .nav button.active {
-            background-color: #f4e4bc;
-            color: #333;
             font-weight: bold;
+            border-radius: 4px;
+            transition: all 0.2s;
+            text-shadow: 1px 1px 0 #000;
         }
 
-        /* Hauptinhalt */
-        .content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
+        .btn:hover {
+            filter: brightness(1.2);
+            transform: translateY(-1px);
         }
 
-        .screen {
-            display: none; /* Standardmäßig versteckt */
-            text-align: center;
+        .btn:active {
+            transform: translateY(1px);
         }
 
-        .screen.active {
-            display: block; /* Nur der aktive Tab wird angezeigt */
+        .btn-danger {
+            background: linear-gradient(to bottom, #c0392b, #922b21);
         }
 
-        /* UI Elemente */
-        .stat-box {
-            background: rgba(255,255,255,0.5);
-            border: 1px solid #8b4513;
-            padding: 10px;
-            margin: 10px auto;
-            width: 300px;
-            border-radius: 5px;
+        .btn-success {
+            background: linear-gradient(to bottom, #27ae60, #1e8449);
         }
 
-        button.action-btn {
-            background-color: #27ae60;
-            color: white;
-            border: none;
+        /* Layout */
+        header {
+            background-color: #1a120b;
             padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #5d4037;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        nav button {
+            margin-left: 10px;
+            background: #5d4037;
+        }
+
+        nav button.active {
+            background: #8e44ad;
+            border-color: #f1c40f;
+        }
+
+        #game-container {
+            display: grid;
+            grid-template-columns: 280px 1fr 300px;
+            gap: 10px;
+            padding: 10px;
+            flex: 1;
+            height: calc(100vh - 60px);
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border: 2px solid #3e2723;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-y: auto;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #6d4c41;
+            padding-bottom: 5px;
+            color: var(--accent-color);
+        }
+
+        /* Character Panel */
+        #char-avatar {
+            width: 100px;
+            height: 100px;
+            background: #333;
+            margin: 0 auto 10px;
+            border-radius: 50%;
+            border: 3px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .stat-val {
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .bar-container {
+            background: #222;
+            height: 16px;
+            border-radius: 8px;
+            margin: 5px 0 10px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #000;
+        }
+
+        .bar-fill {
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .hp-bar {
+            background: #c0392b;
+        }
+
+        .xp-bar {
+            background: #f1c40f;
+        }
+
+        .energy-bar {
+            background: #2980b9;
+        }
+
+        .bar-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            line-height: 16px;
+            color: #fff;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        /* Equipment Slots */
+        .equip-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .slot {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px dashed #6d4c41;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
             cursor: pointer;
+        }
+
+        .slot.filled {
+            border-style: solid;
+            border-color: #8e44ad;
+        }
+
+        .slot-label {
+            font-size: 10px;
+            color: #888;
+            position: absolute;
+            bottom: 2px;
+        }
+
+        /* Inventory */
+        #inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
             margin-top: 10px;
         }
 
-        button.action-btn:disabled {
-            background-color: #95a5a6;
-            cursor: not-allowed;
+        .inv-slot {
+            width: 100%;
+            aspect-ratio: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #5d4037;
+            position: relative;
+            cursor: pointer;
         }
 
-        .progress-bar-container {
-            width: 80%;
-            height: 20px;
-            background-color: #ccc;
-            margin: 20px auto;
-            border-radius: 10px;
-            overflow: hidden;
-            display: none; /* Versteckt wenn keine Quest läuft */
+        .inv-slot:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        .progress-bar-fill {
+        /* Items */
+        .item {
+            width: 100%;
             height: 100%;
-            width: 0%;
-            background-color: #e67e22;
-            transition: width 0.1s linear;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: grab;
         }
-        
-        .log {
-            font-size: 0.9em;
-            color: #555;
-            margin-top: 20px;
-            max-height: 100px;
+
+        .item[data-rarity="common"] {
+            color: #fff;
+            text-shadow: 0 0 5px #fff;
+        }
+
+        .item[data-rarity="rare"] {
+            color: var(--rare-color);
+            text-shadow: 0 0 5px var(--rare-color);
+        }
+
+        .item[data-rarity="epic"] {
+            color: var(--epic-color);
+            text-shadow: 0 0 5px var(--epic-color);
+        }
+
+        .item[data-rarity="legendary"] {
+            color: var(--legendary-color);
+            text-shadow: 0 0 5px var(--legendary-color);
+        }
+
+        /* Tooltip */
+        #tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--accent-color);
+            padding: 10px;
+            border-radius: 4px;
+            pointer-events: none;
+            z-index: 1000;
+            max-width: 200px;
+            font-size: 12px;
+        }
+
+        #tooltip h4 {
+            margin: 0 0 5px;
+            color: var(--accent-color);
+        }
+
+        #tooltip .stat {
+            color: #aaa;
+        }
+
+        /* Tavern */
+        .quest-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid #5d4037;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .quest-info h3 {
+            margin: 0 0 5px;
+            font-size: 16px;
+        }
+
+        .quest-rewards {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        #active-quest-ui {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+        }
+
+        /* Combat */
+        #combat-log {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            height: 300px;
             overflow-y: auto;
-            border-top: 1px solid #ccc;
-            padding-top: 10px;
+            background: #000;
+            padding: 10px;
+            border: 1px solid #333;
+            margin-bottom: 10px;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+        }
+
+        .log-player {
+            color: #27ae60;
+        }
+
+        .log-enemy {
+            color: #c0392b;
+        }
+
+        .log-info {
+            color: #f1c40f;
+        }
+
+        /* Shop */
+        .shop-item {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            border-bottom: 1px solid #444;
+            cursor: pointer;
+        }
+
+        .shop-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .shop-cost {
+            margin-left: auto;
+            color: #f1c40f;
+            font-weight: bold;
+        }
+
+        /* Modal */
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal {
+            background: var(--panel-bg);
+            padding: 30px;
+            border: 2px solid var(--accent-color);
+            border-radius: 8px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .class-select-btn {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 15px;
+            font-size: 18px;
         }
     </style>
 </head>
+
 <body>
 
-<div class="game-container">
-    <!-- Kopfzeile: Ressourcen -->
-    <div class="header">
-        <span id="display-level">Level: 1</span>
-        <span id="display-gold">Gold: 0</span>
-        <span id="display-energy">Abenteuerlust: 100</span>
+    <div id="modal-overlay">
+        <div class="modal">
+            <h2>Choose Your Destiny</h2>
+            <p>Select your class to begin your adventure.</p>
+            <button class="btn class-select-btn" onclick="Game.createCharacter('warrior')">⚔️ Warrior
+                (Strength)</button>
+            <button class="btn class-select-btn" onclick="Game.createCharacter('mage')">🔮 Mage (Intelligence)</button>
+            <button class="btn class-select-btn" onclick="Game.createCharacter('scout')">🏹 Scout (Dexterity)</button>
+        </div>
     </div>
 
-    <!-- Navigation -->
-    <div class="nav">
-        <button onclick="switchTab('charakter')" class="nav-btn active">Charakter</button>
-        <button onclick="switchTab('taverne')" class="nav-btn">Taverne</button>
-        <button onclick="switchTab('arena')" class="nav-btn">Arena (Bald)</button>
-    </div>
+    <header>
+        <div style="font-size: 20px; font-weight: bold; color: var(--accent-color);">BrowserRPG</div>
+        <nav>
+            <button class="btn active" onclick="UI.showTab('tavern')">🍺 Tavern</button>
+            <button class="btn" onclick="UI.showTab('arena')">⚔️ Arena</button>
+            <button class="btn" onclick="UI.showTab('shop')">💰 Shop</button>
+        </nav>
+        <div id="resources">
+            <span style="color: #f1c40f">💰 <span id="res-gold">0</span></span>
+            <span style="margin-left: 15px; color: #9b59b6">🍄 <span id="res-shrooms">0</span></span>
+        </div>
+    </header>
 
-    <!-- Inhalt: Charakter -->
-    <div class="content">
-        <div id="charakter" class="screen active">
-            <h2>Dein Held</h2>
-            <div class="stat-box">
-                <p>Stärke: <span id="stat-str">5</span></p>
-                <button class="action-btn" onclick="upgradeStat('str')">Verbessern (10 Gold)</button>
+    <div id="game-container">
+        <!-- LEFT: Character -->
+        <div class="panel">
+            <h2>Character</h2>
+            <div id="char-avatar">👤</div>
+            <div style="text-align: center; margin-bottom: 10px;">
+                <div id="char-name" style="font-weight: bold; font-size: 18px;">Hero</div>
+                <div id="char-class" style="color: #aaa; font-size: 12px;">Class</div>
+                <div style="font-size: 14px; margin-top: 5px;">Level <span id="char-level">1</span></div>
             </div>
-            <div class="stat-box">
-                <p>Ausdauer: <span id="stat-sta">5</span></p>
-                <button class="action-btn" onclick="upgradeStat('sta')">Verbessern (10 Gold)</button>
+
+            <div class="bar-container">
+                <div id="hp-bar" class="bar-fill hp-bar" style="width: 100%"></div>
+                <div class="bar-text">HP: <span id="val-hp">100/100</span></div>
             </div>
-            <div class="stat-box">
-                <p>Erfahrung: <span id="display-xp">0</span> / <span id="display-xp-max">100</span></p>
+            <div class="bar-container">
+                <div id="xp-bar" class="bar-fill xp-bar" style="width: 0%"></div>
+                <div class="bar-text">XP: <span id="val-xp">0/100</span></div>
+            </div>
+            <div class="bar-container">
+                <div id="energy-bar" class="bar-fill energy-bar" style="width: 100%"></div>
+                <div class="bar-text">Energy: <span id="val-energy">100/100</span></div>
+            </div>
+
+            <div style="margin-top: 10px;">
+                <div class="stat-row"><span>Strength</span><span id="stat-str" class="stat-val">10</span></div>
+                <div class="stat-row"><span>Dexterity</span><span id="stat-dex" class="stat-val">10</span></div>
+                <div class="stat-row"><span>Intelligence</span><span id="stat-int" class="stat-val">10</span></div>
+                <div class="stat-row"><span>Constitution</span><span id="stat-con" class="stat-val">10</span></div>
+                <div class="stat-row"><span>Luck</span><span id="stat-luck" class="stat-val">10</span></div>
+            </div>
+
+            <div style="margin-top: 10px; border-top: 1px solid #555; padding-top: 10px;">
+                <div class="stat-row"><span>Damage</span><span id="stat-dmg" class="stat-val">1-2</span></div>
+                <div class="stat-row"><span>Armor</span><span id="stat-armor" class="stat-val">0</span></div>
             </div>
         </div>
 
-        <!-- Inhalt: Taverne -->
-        <div id="taverne" class="screen">
-            <h2>Die Taverne</h2>
-            <p>Hier triffst du zwielichtige Gestalten, die Aufgaben für dich haben.</p>
-            
-            <div class="stat-box" id="quest-box">
-                <h3>Ratten im Keller</h3>
-                <p>Dauer: 3 Sekunden | Belohnung: 5 XP, 15 Gold</p>
-                <p>Kosten: 10 Abenteuerlust</p>
-                <button class="action-btn" id="quest-btn" onclick="startQuest()">Quest starten</button>
+        <!-- CENTER: Main Content -->
+        <div class="panel">
+            <!-- TAVERN -->
+            <div id="tab-tavern">
+                <h2>The Tavern</h2>
+                <div id="quest-list">
+                    <!-- Quests generated here -->
+                </div>
+                <div id="active-quest-ui" class="hidden">
+                    <h3>On Adventure...</h3>
+                    <p id="quest-desc-active">Fighting rats...</p>
+                    <div class="bar-container" style="height: 24px;">
+                        <div id="quest-timer-bar" class="bar-fill" style="width: 0%; background: #e67e22;"></div>
+                        <div class="bar-text"><span id="quest-timer-val">10</span>s</div>
+                    </div>
+                    <button class="btn btn-danger" onclick="Game.cancelQuest()">Cancel</button>
+                </div>
             </div>
 
-            <div class="progress-bar-container" id="quest-progress">
-                <div class="progress-bar-fill" id="quest-fill"></div>
+            <!-- ARENA -->
+            <div id="tab-arena" class="hidden">
+                <h2>Arena</h2>
+                <p>Fight random enemies to test your strength.</p>
+                <button class="btn btn-danger" onclick="Combat.startFight()"
+                    style="width: 100%; margin-bottom: 10px; padding: 15px;">⚔️ Find Opponent</button>
+                <div id="combat-ui" class="hidden">
+                    <div id="combat-log"></div>
+                    <div style="text-align: center; font-size: 18px; font-weight: bold; margin-top: 10px;"
+                        id="combat-result"></div>
+                </div>
             </div>
-            
-            <div class="log" id="game-log">Willkommen, Abenteurer!</div>
+
+            <!-- SHOP -->
+            <div id="tab-shop" class="hidden">
+                <h2>Weapon Shop</h2>
+                <p>New items every level up!</p>
+                <div id="shop-list">
+                    <!-- Shop items -->
+                </div>
+                <button class="btn" onclick="Shop.refresh()" style="margin-top: 10px; width: 100%;">Refresh (1
+                    🍄)</button>
+            </div>
         </div>
 
-        <!-- Inhalt: Arena -->
-        <div id="arena" class="screen">
-            <h2>Arena</h2>
-            <p>Hier kannst du bald gegen andere Spieler kämpfen.</p>
-            <p>Feature in Entwicklung...</p>
+        <!-- RIGHT: Inventory -->
+        <div class="panel">
+            <h2>Equipment</h2>
+            <div class="equip-grid">
+                <div class="slot" id="slot-head" data-type="head"><span class="slot-label">Head</span></div>
+                <div class="slot" id="slot-chest" data-type="chest"><span class="slot-label">Chest</span></div>
+                <div class="slot" id="slot-weapon" data-type="weapon"><span class="slot-label">Weapon</span></div>
+                <div class="slot" id="slot-boots" data-type="boots"><span class="slot-label">Boots</span></div>
+            </div>
+
+            <h2 style="margin-top: 20px;">Backpack</h2>
+            <div id="inventory-grid">
+                <!-- 20 slots -->
+            </div>
+            <button class="btn btn-danger" id="sell-btn" style="margin-top: 10px; width: 100%;">Drag here to
+                Sell</button>
         </div>
     </div>
-</div>
 
-<script>
-    /* --- JAVASCRIPT LOGIK --- */
+    <div id="tooltip" class="hidden"></div>
 
-    // Spielzustand (State)
-    let player = {
-        level: 1,
-        xp: 0,
-        xpMax: 100,
-        gold: 50,
-        energy: 100,
-        stats: {
-            str: 5,
-            sta: 5
-        }
-    };
+    <script>
+        /**
+         * SINGLE FILE RPG ENGINE
+         * Author: Antigravity
+         */
 
-    let isQuesting = false;
+        // --- CONFIG & UTILS ---
+        const CONSTANTS = {
+            XP_BASE: 100,
+            XP_FACTOR: 1.5,
+            ENERGY_MAX: 100,
+            ENERGY_REGEN: 1, // per tick (10s in real game, 1s here for speed)
+            TICK_RATE: 1000
+        };
 
-    // Initialisierung
-    updateUI();
+        const Utils = {
+            rand: (min, max) => Math.floor(Math.random() * (max - min + 1)) + min,
+            randArr: (arr) => arr[Math.floor(Math.random() * arr.length)],
+            generateId: () => Math.random().toString(36).substr(2, 9),
+            calcXP: (level) => Math.floor(CONSTANTS.XP_BASE * Math.pow(level, CONSTANTS.XP_FACTOR))
+        };
 
-    // Funktion zum Wechseln der Tabs
-    function switchTab(tabId) {
-        // Alle Screens verstecken
-        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-        
-        // Gewählten Screen anzeigen
-        document.getElementById(tabId).classList.add('active');
-        
-        // Button Highlight setzen (einfache Logik basierend auf Reihenfolge)
-        if(tabId === 'charakter') document.querySelectorAll('.nav-btn')[0].classList.add('active');
-        if(tabId === 'taverne') document.querySelectorAll('.nav-btn')[1].classList.add('active');
-        if(tabId === 'arena') document.querySelectorAll('.nav-btn')[2].classList.add('active');
-    }
+        // --- DATA ---
+        const CLASSES = {
+            warrior: { name: 'Warrior', primary: 'str', hpMult: 5, icon: '⚔️' },
+            mage: { name: 'Mage', primary: 'int', hpMult: 2, icon: '🔮' },
+            scout: { name: 'Scout', primary: 'dex', hpMult: 4, icon: '🏹' }
+        };
 
-    // Funktion: Stat verbessern
-    function upgradeStat(stat) {
-        let cost = player.stats[stat] * 2; // Kosten steigen mit dem Wert
-        
-        if (player.gold >= cost) {
-            player.gold -= cost;
-            player.stats[stat]++;
-            log(`Du hast deine ${stat === 'str' ? 'Stärke' : 'Ausdauer'} verbessert!`);
-            updateUI();
-        } else {
-            alert("Nicht genug Gold!");
-        }
-    }
+        const ITEM_TYPES = ['head', 'chest', 'weapon', 'boots'];
+        const ITEM_NAMES = {
+            head: ['Helmet', 'Cap', 'Hood', 'Visor', 'Crown'],
+            chest: ['Armor', 'Tunic', 'Robe', 'Plate', 'Vest'],
+            weapon: ['Sword', 'Staff', 'Dagger', 'Axe', 'Wand'],
+            boots: ['Boots', 'Shoes', 'Greaves', 'Sandals', 'Treads']
+        };
+        const ADJECTIVES = ['Rusty', 'Shiny', 'Old', 'Magical', 'Epic', 'Broken', 'Golden'];
 
-    // Funktion: Quest starten
-    function startQuest() {
-        if (isQuesting) return;
-        if (player.energy < 10) {
-            alert("Du bist zu müde (Keine Abenteuerlust mehr)!");
-            return;
-        }
+        // --- STATE MANAGEMENT ---
+        let State = {
+            player: null,
+            inventory: [], // Array of Item objects or null
+            equipment: { head: null, chest: null, weapon: null, boots: null },
+            quests: [],
+            activeQuest: null,
+            shopItems: [],
+            lastTick: Date.now()
+        };
 
-        isQuesting = true;
-        player.energy -= 10;
-        updateUI();
+        // --- CORE SYSTEMS ---
+        const Game = {
+            init: () => {
+                Game.load();
+                if (!State.player) {
+                    document.getElementById('modal-overlay').classList.remove('hidden');
+                } else {
+                    document.getElementById('modal-overlay').classList.add('hidden');
+                    UI.init();
+                    Game.loop();
+                }
 
-        // UI für Quest anzeigen
-        document.getElementById('quest-btn').disabled = true;
-        document.getElementById('quest-btn').innerText = "Quest läuft...";
-        document.getElementById('quest-progress').style.display = 'block';
-        
-        let duration = 3000; // 3 Sekunden (in ms)
-        let startTime = Date.now();
+                // Setup Inventory Grid
+                const grid = document.getElementById('inventory-grid');
+                grid.innerHTML = '';
+                for (let i = 0; i < 16; i++) {
+                    let div = document.createElement('div');
+                    div.className = 'inv-slot';
+                    div.dataset.index = i;
+                    div.ondrop = DragDrop.drop;
+                    div.ondragover = DragDrop.allowDrop;
+                    grid.appendChild(div);
+                }
 
-        // Animation des Balkens
-        let timer = setInterval(() => {
-            let passed = Date.now() - startTime;
-            let percent = (passed / duration) * 100;
-            
-            if (percent >= 100) {
-                percent = 100;
-                clearInterval(timer);
-                completeQuest();
+                // Setup Equip Slots
+                document.querySelectorAll('.slot').forEach(slot => {
+                    slot.ondrop = DragDrop.dropEquip;
+                    slot.ondragover = DragDrop.allowDrop;
+                });
+
+                // Setup Sell Slot
+                const sellBtn = document.getElementById('sell-btn');
+                sellBtn.ondrop = DragDrop.dropSell;
+                sellBtn.ondragover = DragDrop.allowDrop;
+            },
+
+            createCharacter: (clsKey) => {
+                const cls = CLASSES[clsKey];
+                State.player = {
+                    name: "Hero",
+                    class: clsKey,
+                    level: 1,
+                    xp: 0,
+                    xpMax: Utils.calcXP(1),
+                    gold: 0,
+                    mushrooms: 5,
+                    energy: 100,
+                    stats: { str: 10, dex: 10, int: 10, con: 10, luck: 10 },
+                    baseStats: { str: 10, dex: 10, int: 10, con: 10, luck: 10 }
+                };
+                // Initial Gear
+                State.inventory = new Array(16).fill(null);
+                Game.addItem(ItemSystem.generate(1, 'weapon'));
+
+                Tavern.generateQuests();
+                Shop.generate();
+
+                document.getElementById('modal-overlay').classList.add('hidden');
+                Game.save();
+                UI.init();
+                Game.loop();
+            },
+
+            loop: () => {
+                setInterval(() => {
+                    const now = Date.now();
+                    // Energy Regen
+                    if (State.player.energy < CONSTANTS.ENERGY_MAX) {
+                        State.player.energy = Math.min(CONSTANTS.ENERGY_MAX, State.player.energy + 1);
+                        UI.updateBars();
+                    }
+
+                    // Quest Timer
+                    if (State.activeQuest) {
+                        const q = State.activeQuest;
+                        const elapsed = (now - q.startTime) / 1000;
+                        const remaining = q.duration - elapsed;
+
+                        if (remaining <= 0) {
+                            Tavern.completeQuest();
+                        } else {
+                            UI.updateQuestTimer(remaining, q.duration);
+                        }
+                    }
+
+                    Game.save();
+                }, CONSTANTS.TICK_RATE);
+            },
+
+            save: () => localStorage.setItem('rpg_save_v1', JSON.stringify(State)),
+
+            load: () => {
+                const data = localStorage.getItem('rpg_save_v1');
+                if (data) {
+                    State = JSON.parse(data);
+                    // Re-bind prototypes if needed, but simple objects here
+                }
+            },
+
+            addItem: (item) => {
+                const idx = State.inventory.findIndex(x => x === null);
+                if (idx !== -1) {
+                    State.inventory[idx] = item;
+                    UI.renderInventory();
+                    return true;
+                }
+                return false;
+            },
+
+            addXp: (amount) => {
+                State.player.xp += amount;
+                if (State.player.xp >= State.player.xpMax) {
+                    State.player.level++;
+                    State.player.xp -= State.player.xpMax;
+                    State.player.xpMax = Utils.calcXP(State.player.level);
+
+                    // Stat growth
+                    State.player.baseStats.str += 2;
+                    State.player.baseStats.dex += 2;
+                    State.player.baseStats.int += 2;
+                    State.player.baseStats.con += 2;
+                    State.player.baseStats.luck += 2;
+
+                    // Full heal on level up
+                    State.player.energy = CONSTANTS.ENERGY_MAX;
+
+                    alert("LEVEL UP! You are now level " + State.player.level);
+                    Shop.generate(); // New items for new level
+                }
+                UI.updateStats();
+                UI.updateBars();
+            },
+
+            cancelQuest: () => {
+                State.activeQuest = null;
+                UI.renderTavern();
             }
-            
-            document.getElementById('quest-fill').style.width = percent + "%";
-        }, 50);
-    }
+        };
 
-    // Funktion: Quest abschließen
-    function completeQuest() {
-        isQuesting = false;
-        
-        // Belohnungen
-        let rewardGold = 15 + Math.floor(Math.random() * 5); // 15-20 Gold
-        let rewardXP = 20;
+        // --- ITEM SYSTEM ---
+        const ItemSystem = {
+            generate: (level, forceType = null) => {
+                const type = forceType || Utils.randArr(ITEM_TYPES);
+                const rarityRoll = Math.random();
+                let rarity = 'common';
+                let statMult = 1;
 
-        player.gold += rewardGold;
-        addXP(rewardXP);
+                if (rarityRoll > 0.95) { rarity = 'legendary'; statMult = 3; }
+                else if (rarityRoll > 0.85) { rarity = 'epic'; statMult = 2; }
+                else if (rarityRoll > 0.70) { rarity = 'rare'; statMult = 1.5; }
 
-        log(`Quest beendet! Du erhältst ${rewardGold} Gold und ${rewardXP} XP.`);
+                const name = `${Utils.randArr(ADJECTIVES)} ${Utils.randArr(ITEM_NAMES[type])}`;
+                const mainStat = Utils.randArr(['str', 'dex', 'int', 'con', 'luck']);
+                const val = Math.floor((level * 2 + Utils.rand(1, 5)) * statMult);
 
-        // UI zurücksetzen
-        document.getElementById('quest-btn').disabled = false;
-        document.getElementById('quest-btn').innerText = "Quest starten";
-        document.getElementById('quest-progress').style.display = 'none';
-        document.getElementById('quest-fill').style.width = "0%";
-        
-        updateUI();
-    }
+                return {
+                    id: Utils.generateId(),
+                    name,
+                    type,
+                    rarity,
+                    stats: { [mainStat]: val },
+                    value: val * 10,
+                    level
+                };
+            },
 
-    // XP hinzufügen und Level Up prüfen
-    function addXP(amount) {
-        player.xp += amount;
-        if (player.xp >= player.xpMax) {
-            player.level++;
-            player.xp = player.xp - player.xpMax;
-            player.xpMax = Math.floor(player.xpMax * 1.5); // Nächstes Level wird schwerer
-            player.energy = 100; // Energie auffüllen beim Level Up
-            log(`LEVEL UP! Du bist jetzt Level ${player.level}!`);
-            alert(`Glückwunsch! Level ${player.level} erreicht!`);
-        }
-    }
+            getIcon: (type) => {
+                switch (type) {
+                    case 'weapon': return '⚔️';
+                    case 'head': return '🪖';
+                    case 'chest': return '👕';
+                    case 'boots': return '👢';
+                    default: return '📦';
+                }
+            }
+        };
 
-    // Hilfsfunktion: Log
-    function log(msg) {
-        let logEl = document.getElementById('game-log');
-        logEl.innerHTML = `<div>${msg}</div>` + logEl.innerHTML;
-    }
+        // --- TAVERN SYSTEM ---
+        const Tavern = {
+            generateQuests: () => {
+                State.quests = [];
+                for (let i = 0; i < 3; i++) {
+                    const duration = Utils.rand(10, 60); // seconds
+                    const lvl = State.player.level;
+                    State.quests.push({
+                        id: Utils.generateId(),
+                        name: "Quest #" + (i + 1),
+                        desc: "Defeat the " + Utils.randArr(['Rat', 'Wolf', 'Bandit', 'Orc', 'Dragon']),
+                        duration: duration,
+                        xp: Math.floor(duration * 2 * lvl),
+                        gold: Math.floor(duration * lvl),
+                        cost: Math.floor(duration / 5)
+                    });
+                }
+                UI.renderTavern();
+            },
 
-    // UI Aktualisieren
-    function updateUI() {
-        // Header
-        document.getElementById('display-level').innerText = "Level: " + player.level;
-        document.getElementById('display-gold').innerText = "Gold: " + player.gold;
-        document.getElementById('display-energy').innerText = "Abenteuerlust: " + player.energy;
+            startQuest: (index) => {
+                if (State.activeQuest) return;
+                const q = State.quests[index];
+                if (State.player.energy < q.cost) {
+                    alert("Not enough energy!");
+                    return;
+                }
+                State.player.energy -= q.cost;
+                State.activeQuest = { ...q, startTime: Date.now() };
+                UI.renderTavern();
+                UI.updateBars();
+            },
 
-        // Stats
-        document.getElementById('stat-str').innerText = player.stats.str;
-        document.getElementById('stat-sta').innerText = player.stats.sta;
-        
-        // Buttons Update (Kosten anzeigen)
-        let buttons = document.querySelectorAll('#charakter .action-btn');
-        buttons[0].innerText = `Stärke +1 (${player.stats.str * 2} Gold)`;
-        buttons[1].innerText = `Ausdauer +1 (${player.stats.sta * 2} Gold)`;
+            completeQuest: () => {
+                const q = State.activeQuest;
+                State.player.gold += q.gold;
+                Game.addXp(q.xp);
 
-        // XP
-        document.getElementById('display-xp').innerText = player.xp;
-        document.getElementById('display-xp-max').innerText = player.xpMax;
-    }
+                // Chance for item
+                if (Math.random() > 0.7) {
+                    const item = ItemSystem.generate(State.player.level);
+                    if (Game.addItem(item)) {
+                        alert("You found an item: " + item.name);
+                    } else {
+                        alert("Inventory full! Item lost.");
+                    }
+                }
 
-</script>
+                State.activeQuest = null;
+                Tavern.generateQuests();
+                UI.renderTavern();
+                UI.updateBars();
+            }
+        };
 
+        // --- COMBAT SYSTEM ---
+        const Combat = {
+            startFight: () => {
+                if (State.activeQuest) { alert("Busy on quest!"); return; }
+
+                const enemyLvl = State.player.level;
+                const enemyClass = Utils.randArr(['warrior', 'mage', 'scout']);
+                const enemy = {
+                    name: "Enemy " + CLASSES[enemyClass].name,
+                    class: enemyClass,
+                    level: enemyLvl,
+                    hp: enemyLvl * CLASSES[enemyClass].hpMult * 5,
+                    maxHp: enemyLvl * CLASSES[enemyClass].hpMult * 5,
+                    dmg: enemyLvl * 2
+                };
+
+                Combat.simulate(enemy);
+            },
+
+            simulate: (enemy) => {
+                const p = State.player;
+                const pStats = UI.getEffectiveStats();
+                const pClass = CLASSES[p.class];
+
+                // Calculate Player Combat Stats
+                let pHp = pStats.con * pClass.hpMult * 2; // Simplified HP formula
+                let pDmgMin = pStats[pClass.primary] / 2;
+                let pDmgMax = pStats[pClass.primary];
+
+                // Log
+                const log = document.getElementById('combat-log');
+                log.innerHTML = '';
+                const addLog = (msg, cls) => {
+                    const div = document.createElement('div');
+                    div.className = 'log-entry ' + (cls || '');
+                    div.innerText = msg;
+                    log.appendChild(div);
+                    log.scrollTop = log.scrollHeight;
+                };
+
+                document.getElementById('combat-ui').classList.remove('hidden');
+                addLog(`FIGHT START: ${p.name} vs ${enemy.name}`, 'log-info');
+
+                let round = 1;
+                const fightInterval = setInterval(() => {
+                    // Player Turn
+                    let dmg = Utils.rand(pDmgMin, pDmgMax);
+                    // Crit check
+                    const critChance = (pStats.luck * 2.5) / enemy.level; // %
+                    let isCrit = Math.random() * 100 < critChance;
+                    if (isCrit) dmg *= 2;
+
+                    enemy.hp -= dmg;
+                    addLog(`${p.name} hits for ${Math.floor(dmg)} ${isCrit ? '(CRIT!)' : ''}`, 'log-player');
+
+                    if (enemy.hp <= 0) {
+                        clearInterval(fightInterval);
+                        Combat.endFight(true, enemy);
+                        return;
+                    }
+
+                    // Enemy Turn
+                    let eDmg = Utils.rand(enemy.dmg * 0.8, enemy.dmg * 1.2);
+                    pHp -= eDmg;
+                    addLog(`${enemy.name} hits for ${Math.floor(eDmg)}`, 'log-enemy');
+
+                    if (pHp <= 0) {
+                        clearInterval(fightInterval);
+                        Combat.endFight(false, enemy);
+                        return;
+                    }
+
+                    round++;
+                }, 500);
+            },
+
+            endFight: (win, enemy) => {
+                const res = document.getElementById('combat-result');
+                if (win) {
+                    res.innerText = "VICTORY!";
+                    res.style.color = "#27ae60";
+                    const gold = enemy.level * 5;
+                    const xp = enemy.level * 10;
+                    State.player.gold += gold;
+                    Game.addXp(xp);
+                    document.getElementById('combat-log').innerHTML += `<div class="log-info">Gained ${gold} Gold and ${xp} XP</div>`;
+                } else {
+                    res.innerText = "DEFEAT!";
+                    res.style.color = "#c0392b";
+                }
+                UI.updateBars();
+            }
+        };
+
+        // --- SHOP SYSTEM ---
+        const Shop = {
+            generate: () => {
+                State.shopItems = [];
+                for (let i = 0; i < 6; i++) {
+                    State.shopItems.push(ItemSystem.generate(State.player.level));
+                }
+                UI.renderShop();
+            },
+
+            buy: (index) => {
+                const item = State.shopItems[index];
+                if (State.player.gold >= item.value) {
+                    if (Game.addItem(item)) {
+                        State.player.gold -= item.value;
+                        State.shopItems.splice(index, 1);
+                        UI.renderShop();
+                        UI.updateBars();
+                    } else {
+                        alert("Inventory Full!");
+                    }
+                } else {
+                    alert("Not enough Gold!");
+                }
+            },
+
+            refresh: () => {
+                if (State.player.mushrooms > 0) {
+                    State.player.mushrooms--;
+                    Shop.generate();
+                    UI.updateBars();
+                } else {
+                    alert("No Mushrooms!");
+                }
+            }
+        };
+
+        // --- UI & DRAG DROP ---
+        const UI = {
+            init: () => {
+                UI.updateStats();
+                UI.updateBars();
+                UI.renderInventory();
+                UI.renderEquipment();
+                UI.renderTavern();
+                UI.renderShop();
+            },
+
+            showTab: (tabName) => {
+                document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+                event.target.classList.add('active');
+
+                document.getElementById('tab-tavern').classList.add('hidden');
+                document.getElementById('tab-arena').classList.add('hidden');
+                document.getElementById('tab-shop').classList.add('hidden');
+
+                document.getElementById('tab-' + tabName).classList.remove('hidden');
+            },
+
+            getEffectiveStats: () => {
+                let s = { ...State.player.baseStats };
+                // Add equipment stats
+                Object.values(State.equipment).forEach(item => {
+                    if (item) {
+                        for (let key in item.stats) {
+                            if (s[key] !== undefined) s[key] += item.stats[key];
+                        }
+                    }
+                });
+                return s;
+            },
+
+            updateStats: () => {
+                const s = UI.getEffectiveStats();
+                const p = State.player;
+                const cls = CLASSES[p.class];
+
+                document.getElementById('char-name').innerText = p.name;
+                document.getElementById('char-class').innerText = cls.name;
+                document.getElementById('char-level').innerText = p.level;
+
+                document.getElementById('stat-str').innerText = s.str;
+                document.getElementById('stat-dex').innerText = s.dex;
+                document.getElementById('stat-int').innerText = s.int;
+                document.getElementById('stat-con').innerText = s.con;
+                document.getElementById('stat-luck').innerText = s.luck;
+
+                // Derived
+                const minDmg = Math.floor(s[cls.primary] / 2);
+                const maxDmg = s[cls.primary];
+                document.getElementById('stat-dmg').innerText = `${minDmg}-${maxDmg}`;
+
+                // HP
+                const maxHp = s.con * cls.hpMult * 2;
+                document.getElementById('val-hp').innerText = `${maxHp}/${maxHp}`; // Simplified current HP
+            },
+
+            updateBars: () => {
+                const p = State.player;
+                // HP (Visual only for now, always full in tavern)
+                document.getElementById('hp-bar').style.width = '100%';
+
+                // XP
+                const xpPct = (p.xp / p.xpMax) * 100;
+                document.getElementById('xp-bar').style.width = xpPct + '%';
+                document.getElementById('val-xp').innerText = `${p.xp}/${p.xpMax}`;
+
+                // Energy
+                const enPct = (p.energy / CONSTANTS.ENERGY_MAX) * 100;
+                document.getElementById('energy-bar').style.width = enPct + '%';
+                document.getElementById('val-energy').innerText = `${Math.floor(p.energy)}/${CONSTANTS.ENERGY_MAX}`;
+
+                // Resources
+                document.getElementById('res-gold').innerText = p.gold;
+                document.getElementById('res-shrooms').innerText = p.mushrooms;
+            },
+
+            renderInventory: () => {
+                const grid = document.getElementById('inventory-grid');
+                Array.from(grid.children).forEach((slot, i) => {
+                    slot.innerHTML = '';
+                    const item = State.inventory[i];
+                    if (item) {
+                        slot.appendChild(UI.createItemEl(item, 'inv', i));
+                    }
+                });
+            },
+
+            renderEquipment: () => {
+                ITEM_TYPES.forEach(type => {
+                    const slot = document.getElementById('slot-' + type);
+                    slot.innerHTML = `<span class="slot-label">${type.toUpperCase()}</span>`;
+                    slot.classList.remove('filled');
+                    const item = State.equipment[type];
+                    if (item) {
+                        slot.appendChild(UI.createItemEl(item, 'equip', type));
+                        slot.classList.add('filled');
+                    }
+                });
+                UI.updateStats();
+            },
+
+            createItemEl: (item, loc, index) => {
+                const el = document.createElement('div');
+                el.className = 'item';
+                el.innerText = ItemSystem.getIcon(item.type);
+                el.dataset.rarity = item.rarity;
+                el.draggable = true;
+                el.ondragstart = (e) => DragDrop.drag(e, loc, index);
+
+                // Tooltip
+                el.onmouseenter = (e) => {
+                    const tt = document.getElementById('tooltip');
+                    tt.classList.remove('hidden');
+                    tt.style.left = e.pageX + 10 + 'px';
+                    tt.style.top = e.pageY + 10 + 'px';
+
+                    let statsHtml = '';
+                    for (let k in item.stats) statsHtml += `<div class="stat">+${item.stats[k]} ${k.toUpperCase()}</div>`;
+
+                    tt.innerHTML = `
+                <h4 class="${item.rarity}">${item.name}</h4>
+                <div>Level ${item.level} ${item.type}</div>
+                ${statsHtml}
+                <div style="color: gold; margin-top: 5px;">Sell: ${Math.floor(item.value / 2)} 💰</div>
+            `;
+                };
+                el.onmouseleave = () => document.getElementById('tooltip').classList.add('hidden');
+
+                return el;
+            },
+
+            renderTavern: () => {
+                const list = document.getElementById('quest-list');
+                const activeUI = document.getElementById('active-quest-ui');
+
+                if (State.activeQuest) {
+                    list.classList.add('hidden');
+                    activeUI.classList.remove('hidden');
+                    document.getElementById('quest-desc-active').innerText = State.activeQuest.desc;
+                } else {
+                    list.classList.remove('hidden');
+                    activeUI.classList.add('hidden');
+                    list.innerHTML = '';
+
+                    if (State.quests.length === 0) Tavern.generateQuests();
+
+                    State.quests.forEach((q, i) => {
+                        const div = document.createElement('div');
+                        div.className = 'quest-card';
+                        div.innerHTML = `
+                    <div class="quest-info">
+                        <h3>${q.name}</h3>
+                        <div>${q.desc}</div>
+                    </div>
+                    <div style="text-align: right">
+                        <div class="quest-rewards">⏳ ${q.duration}s | 💰 ${q.gold} | ✨ ${q.xp} XP</div>
+                        <button class="btn" style="margin-top: 5px;" onclick="Tavern.startQuest(${i})">Start (-${q.cost} En)</button>
+                    </div>
+                `;
+                        list.appendChild(div);
+                    });
+                }
+            },
+
+            updateQuestTimer: (remaining, total) => {
+                const pct = (remaining / total) * 100;
+                document.getElementById('quest-timer-bar').style.width = pct + '%';
+                document.getElementById('quest-timer-val').innerText = Math.ceil(remaining);
+            },
+
+            renderShop: () => {
+                const list = document.getElementById('shop-list');
+                list.innerHTML = '';
+                State.shopItems.forEach((item, i) => {
+                    const div = document.createElement('div');
+                    div.className = 'shop-item';
+                    div.innerHTML = `
+                <div style="font-size: 24px; margin-right: 10px;">${ItemSystem.getIcon(item.type)}</div>
+                <div>
+                    <div style="color: ${item.rarity === 'common' ? '#fff' : 'var(--' + item.rarity + '-color)'}">${item.name}</div>
+                    <div style="font-size: 11px; color: #aaa;">+Stats...</div>
+                </div>
+                <div class="shop-cost">${item.value} 💰</div>
+            `;
+                    div.onclick = () => Shop.buy(i);
+
+                    // Add tooltip logic similar to createItemEl (simplified here)
+                    div.title = JSON.stringify(item.stats);
+
+                    list.appendChild(div);
+                });
+            }
+        };
+
+        // --- DRAG & DROP ---
+        const DragDrop = {
+            drag: (e, loc, index) => {
+                e.dataTransfer.setData("text/plain", JSON.stringify({ loc, index }));
+            },
+
+            allowDrop: (e) => e.preventDefault(),
+
+            drop: (e) => {
+                e.preventDefault();
+                const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+                const targetIndex = parseInt(e.target.closest('.inv-slot').dataset.index);
+
+                if (data.loc === 'inv') {
+                    // Swap
+                    const temp = State.inventory[targetIndex];
+                    State.inventory[targetIndex] = State.inventory[data.index];
+                    State.inventory[data.index] = temp;
+                } else if (data.loc === 'equip') {
+                    // Unequip to slot
+                    const item = State.equipment[data.index]; // data.index is type string here
+                    if (State.inventory[targetIndex] === null) {
+                        State.inventory[targetIndex] = item;
+                        State.equipment[data.index] = null;
+                    }
+                }
+                UI.renderInventory();
+                UI.renderEquipment();
+            },
+
+            dropEquip: (e) => {
+                e.preventDefault();
+                const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+                const slotType = e.target.closest('.slot').dataset.type;
+
+                if (data.loc === 'inv') {
+                    const item = State.inventory[data.index];
+                    if (item && item.type === slotType) {
+                        // Swap equip
+                        const currentEquip = State.equipment[slotType];
+                        State.equipment[slotType] = item;
+                        State.inventory[data.index] = currentEquip;
+                    }
+                }
+                UI.renderInventory();
+                UI.renderEquipment();
+            },
+
+            dropSell: (e) => {
+                e.preventDefault();
+                const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+                if (data.loc === 'inv') {
+                    const item = State.inventory[data.index];
+                    if (item) {
+                        const val = Math.floor(item.value / 2);
+                        if (confirm(`Sell ${item.name} for ${val} Gold?`)) {
+                            State.player.gold += val;
+                            State.inventory[data.index] = null;
+                            UI.renderInventory();
+                            UI.updateBars();
+                        }
+                    }
+                }
+            }
+        };
+
+        // Start
+        window.onload = Game.init;
+
+    </script>
 </body>
+
 </html>
