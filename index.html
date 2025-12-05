@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mein Browser RPG</title>
+    <style>
+        /* --- CSS STYLING --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #2c3e50;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .game-container {
+            width: 800px;
+            height: 600px;
+            background-color: #f4e4bc; /* Pergament-Farbe */
+            border: 5px solid #8b4513;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* Header mit Ressourcen */
+        .header {
+            background-color: #8b4513;
+            color: #fff;
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            font-weight: bold;
+        }
+
+        /* Navigation */
+        .nav {
+            background-color: #a0522d;
+            display: flex;
+        }
+
+        .nav button {
+            flex: 1;
+            padding: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .nav button:hover {
+            background-color: #cd853f;
+        }
+
+        .nav button.active {
+            background-color: #f4e4bc;
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* Hauptinhalt */
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .screen {
+            display: none; /* Standardmäßig versteckt */
+            text-align: center;
+        }
+
+        .screen.active {
+            display: block; /* Nur der aktive Tab wird angezeigt */
+        }
+
+        /* UI Elemente */
+        .stat-box {
+            background: rgba(255,255,255,0.5);
+            border: 1px solid #8b4513;
+            padding: 10px;
+            margin: 10px auto;
+            width: 300px;
+            border-radius: 5px;
+        }
+
+        button.action-btn {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button.action-btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .progress-bar-container {
+            width: 80%;
+            height: 20px;
+            background-color: #ccc;
+            margin: 20px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            display: none; /* Versteckt wenn keine Quest läuft */
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background-color: #e67e22;
+            transition: width 0.1s linear;
+        }
+        
+        .log {
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 20px;
+            max-height: 100px;
+            overflow-y: auto;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <!-- Kopfzeile: Ressourcen -->
+    <div class="header">
+        <span id="display-level">Level: 1</span>
+        <span id="display-gold">Gold: 0</span>
+        <span id="display-energy">Abenteuerlust: 100</span>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav">
+        <button onclick="switchTab('charakter')" class="nav-btn active">Charakter</button>
+        <button onclick="switchTab('taverne')" class="nav-btn">Taverne</button>
+        <button onclick="switchTab('arena')" class="nav-btn">Arena (Bald)</button>
+    </div>
+
+    <!-- Inhalt: Charakter -->
+    <div class="content">
+        <div id="charakter" class="screen active">
+            <h2>Dein Held</h2>
+            <div class="stat-box">
+                <p>Stärke: <span id="stat-str">5</span></p>
+                <button class="action-btn" onclick="upgradeStat('str')">Verbessern (10 Gold)</button>
+            </div>
+            <div class="stat-box">
+                <p>Ausdauer: <span id="stat-sta">5</span></p>
+                <button class="action-btn" onclick="upgradeStat('sta')">Verbessern (10 Gold)</button>
+            </div>
+            <div class="stat-box">
+                <p>Erfahrung: <span id="display-xp">0</span> / <span id="display-xp-max">100</span></p>
+            </div>
+        </div>
+
+        <!-- Inhalt: Taverne -->
+        <div id="taverne" class="screen">
+            <h2>Die Taverne</h2>
+            <p>Hier triffst du zwielichtige Gestalten, die Aufgaben für dich haben.</p>
+            
+            <div class="stat-box" id="quest-box">
+                <h3>Ratten im Keller</h3>
+                <p>Dauer: 3 Sekunden | Belohnung: 5 XP, 15 Gold</p>
+                <p>Kosten: 10 Abenteuerlust</p>
+                <button class="action-btn" id="quest-btn" onclick="startQuest()">Quest starten</button>
+            </div>
+
+            <div class="progress-bar-container" id="quest-progress">
+                <div class="progress-bar-fill" id="quest-fill"></div>
+            </div>
+            
+            <div class="log" id="game-log">Willkommen, Abenteurer!</div>
+        </div>
+
+        <!-- Inhalt: Arena -->
+        <div id="arena" class="screen">
+            <h2>Arena</h2>
+            <p>Hier kannst du bald gegen andere Spieler kämpfen.</p>
+            <p>Feature in Entwicklung...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* --- JAVASCRIPT LOGIK --- */
+
+    // Spielzustand (State)
+    let player = {
+        level: 1,
+        xp: 0,
+        xpMax: 100,
+        gold: 50,
+        energy: 100,
+        stats: {
+            str: 5,
+            sta: 5
+        }
+    };
+
+    let isQuesting = false;
+
+    // Initialisierung
+    updateUI();
+
+    // Funktion zum Wechseln der Tabs
+    function switchTab(tabId) {
+        // Alle Screens verstecken
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+        
+        // Gewählten Screen anzeigen
+        document.getElementById(tabId).classList.add('active');
+        
+        // Button Highlight setzen (einfache Logik basierend auf Reihenfolge)
+        if(tabId === 'charakter') document.querySelectorAll('.nav-btn')[0].classList.add('active');
+        if(tabId === 'taverne') document.querySelectorAll('.nav-btn')[1].classList.add('active');
+        if(tabId === 'arena') document.querySelectorAll('.nav-btn')[2].classList.add('active');
+    }
+
+    // Funktion: Stat verbessern
+    function upgradeStat(stat) {
+        let cost = player.stats[stat] * 2; // Kosten steigen mit dem Wert
+        
+        if (player.gold >= cost) {
+            player.gold -= cost;
+            player.stats[stat]++;
+            log(`Du hast deine ${stat === 'str' ? 'Stärke' : 'Ausdauer'} verbessert!`);
+            updateUI();
+        } else {
+            alert("Nicht genug Gold!");
+        }
+    }
+
+    // Funktion: Quest starten
+    function startQuest() {
+        if (isQuesting) return;
+        if (player.energy < 10) {
+            alert("Du bist zu müde (Keine Abenteuerlust mehr)!");
+            return;
+        }
+
+        isQuesting = true;
+        player.energy -= 10;
+        updateUI();
+
+        // UI für Quest anzeigen
+        document.getElementById('quest-btn').disabled = true;
+        document.getElementById('quest-btn').innerText = "Quest läuft...";
+        document.getElementById('quest-progress').style.display = 'block';
+        
+        let duration = 3000; // 3 Sekunden (in ms)
+        let startTime = Date.now();
+
+        // Animation des Balkens
+        let timer = setInterval(() => {
+            let passed = Date.now() - startTime;
+            let percent = (passed / duration) * 100;
+            
+            if (percent >= 100) {
+                percent = 100;
+                clearInterval(timer);
+                completeQuest();
+            }
+            
+            document.getElementById('quest-fill').style.width = percent + "%";
+        }, 50);
+    }
+
+    // Funktion: Quest abschließen
+    function completeQuest() {
+        isQuesting = false;
+        
+        // Belohnungen
+        let rewardGold = 15 + Math.floor(Math.random() * 5); // 15-20 Gold
+        let rewardXP = 20;
+
+        player.gold += rewardGold;
+        addXP(rewardXP);
+
+        log(`Quest beendet! Du erhältst ${rewardGold} Gold und ${rewardXP} XP.`);
+
+        // UI zurücksetzen
+        document.getElementById('quest-btn').disabled = false;
+        document.getElementById('quest-btn').innerText = "Quest starten";
+        document.getElementById('quest-progress').style.display = 'none';
+        document.getElementById('quest-fill').style.width = "0%";
+        
+        updateUI();
+    }
+
+    // XP hinzufügen und Level Up prüfen
+    function addXP(amount) {
+        player.xp += amount;
+        if (player.xp >= player.xpMax) {
+            player.level++;
+            player.xp = player.xp - player.xpMax;
+            player.xpMax = Math.floor(player.xpMax * 1.5); // Nächstes Level wird schwerer
+            player.energy = 100; // Energie auffüllen beim Level Up
+            log(`LEVEL UP! Du bist jetzt Level ${player.level}!`);
+            alert(`Glückwunsch! Level ${player.level} erreicht!`);
+        }
+    }
+
+    // Hilfsfunktion: Log
+    function log(msg) {
+        let logEl = document.getElementById('game-log');
+        logEl.innerHTML = `<div>${msg}</div>` + logEl.innerHTML;
+    }
+
+    // UI Aktualisieren
+    function updateUI() {
+        // Header
+        document.getElementById('display-level').innerText = "Level: " + player.level;
+        document.getElementById('display-gold').innerText = "Gold: " + player.gold;
+        document.getElementById('display-energy').innerText = "Abenteuerlust: " + player.energy;
+
+        // Stats
+        document.getElementById('stat-str').innerText = player.stats.str;
+        document.getElementById('stat-sta').innerText = player.stats.sta;
+        
+        // Buttons Update (Kosten anzeigen)
+        let buttons = document.querySelectorAll('#charakter .action-btn');
+        buttons[0].innerText = `Stärke +1 (${player.stats.str * 2} Gold)`;
+        buttons[1].innerText = `Ausdauer +1 (${player.stats.sta * 2} Gold)`;
+
+        // XP
+        document.getElementById('display-xp').innerText = player.xp;
+        document.getElementById('display-xp-max').innerText = player.xpMax;
+    }
+
+</script>
+
+</body>
+</html>
